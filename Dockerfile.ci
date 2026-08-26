@@ -1,0 +1,54 @@
+FROM debian:12-slim
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    ca-certificates \
+    curl \
+    wget \
+    file \
+    git \
+    pkg-config \
+    unzip \
+    xz-utils \
+    jq \
+    libwebkit2gtk-4.1-dev \
+    libxdo-dev \
+    libssl-dev \
+    libayatana-appindicator3-dev \
+    librsvg2-dev \
+    libfuse2 \
+    patchelf \
+    rpm \
+    && rm -rf /var/lib/apt/lists/*
+
+# Jenkins normally runs as UID 1000.
+RUN useradd \
+    --create-home \
+    --uid 1000 \
+    --shell /bin/bash \
+    jenkins
+
+USER jenkins
+
+ENV HOME=/home/jenkins
+ENV RUSTUP_HOME=/home/jenkins/.rustup
+ENV CARGO_HOME=/home/jenkins/.cargo
+ENV BUN_INSTALL=/home/jenkins/.bun
+
+ENV PATH="/home/jenkins/.cargo/bin:/home/jenkins/.bun/bin:${PATH}"
+
+# Rust
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
+    | sh -s -- -y --default-toolchain stable
+
+RUN rustup component add rustfmt clippy
+
+# Bun
+RUN curl -fsSL https://bun.sh/install | bash
+
+# Sanity check while constructing image
+RUN rustc --version \
+    && cargo --version \
+    && bun --version

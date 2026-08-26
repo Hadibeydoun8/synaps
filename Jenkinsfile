@@ -1,5 +1,10 @@
 pipeline {
-    agent any
+    agent {
+        dockerfile {
+            filename 'Dockerfile.ci'
+            additionalBuildArgs '--pull'
+        }
+    }
 
     options {
         timestamps()
@@ -8,15 +13,12 @@ pipeline {
     environment {
         CARGO_TERM_COLOR = 'always'
         CI = 'true'
+
+        // Helps AppImage tooling operate inside CI containers.
+        APPIMAGE_EXTRACT_AND_RUN = '1'
     }
 
     stages {
-        stage('Checkout') {
-            steps {
-                checkout scm
-            }
-        }
-
         stage('Versions') {
             steps {
                 sh '''
@@ -27,7 +29,7 @@ pipeline {
             }
         }
 
-        stage('Install Frontend') {
+        stage('Install') {
             steps {
                 sh 'bun install --frozen-lockfile'
             }
