@@ -21,6 +21,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libfuse2 \
     patchelf \
     rpm \
+    xdg-utils
     && rm -rf /var/lib/apt/lists/*
 
 # Jenkins normally runs as UID 1000.
